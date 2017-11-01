@@ -3,6 +3,12 @@
     auth: "{{ ovirt_auth }}"
     pattern: "datacenter={{ data_center_name }}"
 
+- name: Remove Disks on Storage Domains
+  include: disks.yml
+  vars:
+    storage_domain_id: "{{ item.id }}"
+  with_items: "{{ ovirt_storage_domains }}"
+
 - name: Remove Storage Domains apart from master and hosted_engine storage (if HE is used)
   ovirt_storage_domains:
     state: absent

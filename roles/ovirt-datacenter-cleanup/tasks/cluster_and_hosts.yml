@@ -1,9 +1,27 @@
-- name: Find existing Hosts
+- debug:
+    var: not (hosted_engine and (cluster_item.id == hosted_engine_cluster_id))
+    
+- debug:
+    var: (cluster_item.data_center is defined) and (cluster_item.data_center.id == ovirt_datacenters[0].id)
+
+- debug:
+    var: (cluster_item.data_center is defined) 
+
+- debug:
+    var: (cluster_item.data_center.id == ovirt_datacenters[0].id)
+
+- debug:
+    var: cluster_item.data_center.id
+
+- debug:
+    var: ovirt_datacenters[0].id
+
+- name: "Find existing Hosts in cluster {{ cluster_item.name }}"
   ovirt_hosts_facts:
     auth: "{{ ovirt_auth }}"
     pattern: "cluster={{ cluster_item.name }}"
 
-- name: Remove Hosts
+- name: "Remove Hosts from cluster {{ cluster_item.name }}"
   ovirt_hosts:
     state: absent
     name: "{{ host_item.name }}"
@@ -12,7 +30,7 @@
   loop_control:
     loop_var: host_item
 
-- name: Remove Cluster
+- name: "Remove Cluster {{ cluster_item.name }}"
   ovirt_cluster:
     state: absent
     name: "{{ cluster_item.name }}"

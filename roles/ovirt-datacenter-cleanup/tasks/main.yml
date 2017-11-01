@@ -2,47 +2,48 @@
   debug:
     msg: "Attempting to clean Datacenter {{ data_center_name }}."
 
+- name: Find info about the DC "{{ data_center_name }}"
+  ovirt_datacenter_facts:
+    auth: "{{ ovirt_auth }}"
+    pattern: "name={{ data_center_name }}"
+
 - name: Find hosted engine details if HE
-  include: find_hosted_engine_details.yml
+  include_tasks: find_hosted_engine_details.yml
 
-- name: Remove VMPools
-  include: vm_pools.yml
+- name: Remove VMPools of datacenter "{{ data_center_name }}"
+  include_tasks: vm_pools.yml
 
-- name: Remove VMs (apart from hosted engine VM if HE)
-  include: vms.yml
+- name: Remove VMs of datacenter "{{ data_center_name }}" (apart from hosted engine VM if HE)
+  include_tasks: vms.yml
 
-- name: Remove Templates
-  include: templates.yml
+- name: Remove Templates of datacenter "{{ data_center_name }}"
+  include_tasks: templates.yml
 
-- name: Remove Disks
-  include: disks.yml
-
-- name: Find existing Storage Domains in Datacenter
+- name: Find existing Storage Domains in datacenter "{{ data_center_name }}"
   ovirt_storage_domains_facts:
     auth: "{{ ovirt_auth }}"
     pattern: "datacenter={{ data_center_name }}"
 
 - name: Remove all Storage Domains except master (and hosted_storage if HE)
-  include: storages_pre.yml
+  include_tasks: storages_pre.yml
 
-- name: Find existing clusters in Datacenter
+- name: Find existing clusters in datacenter "{{ data_center_name }}"
   ovirt_cluster_facts:
     auth: "{{ ovirt_auth }}"
-    pattern: "datacenter={{ data_center_name }}"
 
-- name: Remove Datacenter
-  include: datacenter.yml
+- name: Remove Datacenter "{{ data_center_name }}"
+  include_tasks: datacenter.yml
   when: not hosted_engine
 
 - name: Remove master Storage Domain
-  include: storages_last.yml
+  include_tasks: storages_last.yml
   when: not hosted_engine
 
-- name: Remove Clusters and Hosts
-  include: cluster_and_hosts.yml
+- name: Remove Clusters and Hosts in Datacenter "{{ data_center_name }}"
+  include_tasks: cluster_and_hosts.yml
+  when:
+    - not (hosted_engine and (cluster_item.id == hosted_engine_cluster_id))
+    - (cluster_item.data_center is defined) and (cluster_item.data_center.id == ovirt_datacenters[0].id)
   with_items: "{{ ovirt_clusters }}"
   loop_control:
     loop_var: cluster_item
-  when:
-    - not (hosted engine and cluster_item.id == hosted_engine_cluster_id)
-    - cluster_item.data_center.id == ovirt_datacenters[0].id

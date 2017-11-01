@@ -1,7 +1,7 @@
-- name: Find existing Disks
+- name: Find existing Disks on Storage Domain
   ovirt_disks_facts:
     auth: "{{ ovirt_auth }}"
-    pattern: "datacenter={{ data_center_name }}"
+    pattern: "storage_domain={{ storage_domain_id }}"
 
 - name: Remove Disks
   ovirt_disks:
